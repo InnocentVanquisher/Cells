@@ -7,17 +7,18 @@ class program:
     active : bool = True
     in_game : bool = False
     current_cell : cell.cell
+    current_turn : int
     def __init__(self) -> None:
         self.commands : dict = {
         "START" : [self.start, "!!\nCOMMAND START:Starts the game/ restarts the game \n Takes no arguments\n!!"],
         "EXIT" : [self.end,"!!COMMAND EXIT:Forcibly exists the simulation. \n Takes no arguments!!"],
         "HELP" : [self.command_lis,"!!\nCOMMAND Help:Prints list of available commands. \n Can take the name of other commands as an argument \n EXAMPLE: HELP START\n!!"],
-        "TURN" : [self.turn, "!!\nCOMMAND Turn: Passes a turn, printing the actions of each tick (turns are 4-9 ticks, depending on amount of atp generated and health/size of nucleus\nCan only be used the simulation is ongoing.\n!!"],
+        "TURN" : [self.turn, "!!\nCOMMAND Turn: Passes a turn, printing the actions of each tick (turns are 4-9 ticks, depending on amount of atp generated and health/size of nucleus)\nCan only be used while the simulation is ongoing.\n!!"],
         "SHOW" : [self.show,"!!\nCOMMAND Show: Prints specific properties about the cell/organs\n Takes subject as an argument\nEXAMPLE: Show Atp\n!!"],
-        "ORGANS" : [self.organ_list,"!!\nCOMMAND ORGANS: Prints names and types of present organs inside the cell.\n Takes organ name as an argument, printing out its attributes\n!!"],
-        "ACT" : [self.start,""],
+        "ORGANS" : [self.organ_list,"!!\nCOMMAND Organs: Prints names and types of present organs inside the cell.\n Takes organ name as an argument, printing out its attributes\n!!"],
+        "ACT" : [self.act,"!!\nCOMMAND Act: Performs a pre programmed action from a predefined list.\n Takes an action as an argument\n!!"],
     }
-        self.current_turn = 0
+        
     def intrude_message(self):
         print("ERROR")
         self.time.sleep(1)
@@ -58,7 +59,7 @@ class program:
             print("present commands are:")
             for command in self.commands:
                 print(f"{command}")
-            print("Add an argument to the help command to get more information.")
+            print("\n!!Add an argument to the help command to get more information!!")
         self.processing = False
     def tick(self,arg=""):
         self.current_cell.tick_actor()
@@ -71,6 +72,7 @@ class program:
             self.time.sleep(0.2)
             self.tick()
             i+=1
+        self.processing = False
     def show(self,arg=""):
         if not self.in_game:
             self.intrude_message()
@@ -81,24 +83,71 @@ class program:
             case "ACTS":
                 print(f"*Current Acts number is: {self.current_cell.acts}")
             case "PROTEIN":
-                print(f"*Current Protein value is: {self.current_cell.protein}")
+                print(f"*Current Protein count is: {self.current_cell.protein}")
             case "WASTE":
                 print(f"*Current Waste value is: {self.current_cell.waste}")
             case _:
                 print("Available Inspectable Arguments are:")
-        
+
         self.processing = False
         pass
-    def organ_list(self):
+    def organ_list(self, arg = ""):
         if not self.in_game:
             self.intrude_message()
             return
-        print(f"*Organs inside cell, {self.current_cell.cell_id} are:")
-        self.time.sleep(0.4)
+        organ_names = []
         for organ in self.current_cell.organs:
-            print(organ.organ_name)
-        pass
-    
+            organ_names.append(organ.organ_name.upper())
+        if arg in organ_names:
+            for organ in self.current_cell.organs:
+                if organ.organ_name.upper() == arg:
+                    print(f"Organ {organ.organ_name} : type_{organ.organ_id}:\n °- MAINTENANCE COST: {organ.main_cost} \n °- FUNCTION COST: {organ.func_cost} \n °- PRIORITY: {organ.priority} \n °- INTEGRITY: {organ.integrity} \n °- WASTE ACCUMULATION: {organ.waste} \n")
+        else:
+            print(f"*Organs inside cell, {self.current_cell.cell_id} are:")
+            self.time.sleep(0.4)
+            for organ in self.current_cell.organs:
+                print(f"{organ.organ_name} : type_{organ.organ_id}")
+            pass
+
+            print("\n!!Add the name of an ORGANELLE as an argument, to inspect it!!")
+        self.processing = False
+    def act(self,arg = ""):
+        match arg:
+            case "CREATE":
+                self.time.sleep(0.4)
+                print("**************")
+                print(f"_ORGANELLE CREATION MENU_\nAvailable types:mitachondria,membrane,ribosome \nCOMMAND: ORGANELLE_TYPE ORGANELLE_NAME")
+                try:
+                    INPUT = input()
+                    arg1 = ""
+                    for i in range(len(INPUT)):
+                        if INPUT[i] == ' ':
+                            break
+                        arg1 += INPUT[i]
+                    arg2 = ""
+                    if len(arg1)+1 >= len(INPUT):
+                        pass
+                    else:
+                        for i in range(len(arg1)+1,len(INPUT)):
+                            if INPUT[i] == ' ':
+                                break
+                            arg2 += INPUT[i]
+                    self.current_cell.create_organelle(arg2,arg1.upper())
+                except:
+                    print("ERROR WHILE PERFORMING ACTION")
+
+            case "DELETE":
+                self.time.sleep(0.4)
+                print("**************")
+                print(f"_ORGANELLE DELETION MENU_\nEnter name of organelle you wanted DELETED PERMANENTLY\nCOMMAND: ORGANELLE_NAME")
+                try:
+                    INPUT = input()
+                    self.current_cell.delete_organelle(INPUT)
+                except:
+                    print("ERROR WHILE PERFORMING ACTION")
+            case _:
+                print(f"**LIST OF AVAILABLE ACTIONS:**\nCreate: Creates new organelle\nDelete: Delete an exisitng organelle")
+        self.processing = False
     def Update(self):
         pass
         
@@ -132,6 +181,6 @@ class program:
                     self.commands[command][0](arg1)
             else:
                 self.time.sleep(0.2)
-                print("Unkown command")
+                print("Unkown command!")
 prog = program()
 prog.main()

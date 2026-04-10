@@ -3,6 +3,7 @@ class cell:
     cell_id :str = ""
     dna = 0
 
+    size : float = 1.0
     atp :int = 200
     acts: int = 8
     protein: int = 8
@@ -22,10 +23,10 @@ class cell:
             else:
                 if org.maintained:
                     self.use_atp(org.func_cost)
-                    print(f"{org.organ_name} has done its function: {org.func_cost} has been used!")
+                    print(f"{org.organ_name} has done its function: {org.func_cost} ATP has been used!")
                 else:
                     self.use_atp(org.func_cost)
-                    print(f"{org.organ_name} has been maintained: {org.main_cost} has been used!")
+                    print(f"{org.organ_name} has been maintained: {org.main_cost} ATP has been used!")
                 org.tick_picked()
                 
     def tick_actor(self):
@@ -63,3 +64,45 @@ class cell:
         rib = ribosome("Ribosome",2,self)
         mem = membrane("Membrane",1,self)
         self.organs = [nuc,met,rib,mem]
+    def get_max(self):
+
+
+        return 6
+
+
+    def create_organelle(self,name,type):
+        if len(self.organs) >= self.get_max():
+
+            print("!!MAXIMUM ORGANELLE COUNT ALREADY REACHED!!")
+            return
+        for organ in self.organs:
+            if organ.organ_name == name:
+                print("!!NAME ALREADY USED!!")
+                return
+        match type:
+            case "MITACHONDRIA":
+                neworg = mitachondria(name,4,self)
+                self.organs.append(neworg)
+                print(f"-A new Mitachondria, {name} has been created!")
+            case "MEMBRANE":
+                neworg = membrane(name,4,self)
+                self.organs.append(neworg)
+                print(f"-A new Membrane, {name} has been created!")
+            case "RIBOSOME":
+                neworg = ribosome(name,4,self)
+                self.organs.append(neworg)
+                print(f"-A new Ribosome, {name} has been created!")
+            case _:
+                print("!!THIS TYPE IS NOT AVAILABLE!!")
+    def delete_organelle(self,name):
+        for organ in self.organs:
+            if organ.organ_name == name:
+                if organ.organ_id == "Nucleus":
+                    print("!!YOU CANNOT DELETE THE NUCLEUS!!")
+                    return
+                print(f"{name} has been removed via  autophagy!")
+                self.organs.remove(organ)
+
+                return
+            
+        print("!!ORGANELLE NOT FOUND!!")
